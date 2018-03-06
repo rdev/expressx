@@ -1,0 +1,62 @@
+#!/usr/bin/env node
+const http = require('http');
+const { join } = require('path');
+const ls = require('log-symbols');
+const chalk = require('chalk');
+// const spdy = require('spdy');
+const prepare = require('../dist/lib/prepare').default;
+
+/* eslint-disable global-require, import/no-dynamic-require, security/detect-non-literal-require */
+
+function normalizePort(val) {
+	const port = parseInt(val, 10);
+
+	if (Number.isNaN(port)) {
+		// named pipe
+		return val;
+	}
+
+	if (port >= 0) {
+		// port number
+		return port;
+	}
+
+	return false;
+}
+
+const appInitializer = require(join(process.cwd(), '.expressx/build/app.js')).default;
+const app = prepare(appInitializer);
+
+const port = normalizePort(process.env.PORT || '3000');
+app.set('port', port);
+
+const server = http.createServer(app);
+
+server.listen(port);
+server.on('error', error => {
+	if (error.syscall !== 'listen') {
+		throw error;
+	}
+
+	const bind = typeof port === 'string' ? `Pipe ${port}` : `Port ${port}`;
+
+	// handle specific listen errors with friendly messages
+	switch (error.code) {
+		case 'EACCES':
+			console.error(ls.warning, chalk.yellow(`${bind} requires elevated privileges`));
+			process.exit(1); // eslint-disable-line unicorn/no-process-exit
+			break;
+		case 'EADDRINUSE':
+			console.error(ls.error, chalk.red(`${bind} is already in use`));
+			process.exit(1); // eslint-disable-line unicorn/no-process-exit
+			break;
+		default:
+			throw error;
+	}
+});
+
+server.on('listening', () => {
+	const addr = server.address();
+	const bind = typeof addr === 'string' ? `pipe ${addr}` : `port ${addr.port}`;
+	console.log(ls.info, chalk.cyan(`> Ready on port ${bind}`));
+});

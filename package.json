@@ -1,0 +1,95 @@
+{
+	"name": "expressx",
+	"version": "0.0.0-development",
+	"description": "",
+	"main": "index.js",
+	"scripts": {
+		"build": "babel -d dist/ src/",
+		"test": "npm run lint && npm run lint",
+		"lint": "vave lint"
+	},
+	"bin": {
+		"expressx": "bin/expressx.js"
+	},
+	"keywords": [],
+	"author": "Max Rovensky <hey@fivepointseven.com> (https://fivepointseven.com/)",
+	"license": "ISC",
+	"devDependencies": {
+		"babel-cli": "^6.26.0",
+		"babel-eslint": "^8.2.2",
+		"commitizen": "^2.9.6",
+		"cz-conventional-changelog": "^2.1.0",
+		"eslint": "^4.18.1",
+		"eslint-config-vave": "^0.4.0",
+		"eslint-formatter-pretty": "^1.3.0",
+		"prettier": "^1.11.1",
+		"vave": "^0.5.0"
+	},
+	"config": {
+		"commitizen": {
+			"path": "node_modules/cz-conventional-changelog"
+		}
+	},
+	"eslintConfig": {
+		"extends": "vave",
+		"rules": {
+			"security/detect-non-literal-fs-filename": "off"
+		}
+	},
+	"prettier": {
+		"printWidth": 100,
+		"useTabs": true,
+		"tabWidth": 4,
+		"trailingComma": "all",
+		"singleQuote": true
+	},
+	"babel": {
+		"presets": [
+			"vave",
+			[
+				"env",
+				{
+					"modules": "commonjs"
+				}
+			]
+		]
+	},
+	"dependencies": {
+		"@csstools/postcss-sass": "^2.0.0",
+		"autoprefixer": "^8.1.0",
+		"babel-core": "^6.26.0",
+		"babel-plugin-transform-class-properties": "^6.24.1",
+		"babel-plugin-transform-decorators-legacy": "^1.3.4",
+		"babel-plugin-transform-do-expressions": "^6.22.0",
+		"babel-plugin-transform-object-rest-spread": "^6.26.0",
+		"babel-plugin-transform-optional-catch-binding": "^7.0.0-alpha.16",
+		"babel-plugin-transform-runtime": "^6.23.0",
+		"babel-preset-env": "^1.6.1",
+		"babel-preset-flow": "^6.23.0",
+		"babel-preset-stage-3": "^6.24.1",
+		"babel-preset-vave": "^0.3.0",
+		"babel-runtime": "^6.26.0",
+		"body-parser": "^1.18.2",
+		"chalk": "^2.3.1",
+		"clear": "^0.1.0",
+		"commander": "^2.14.1",
+		"compression": "^1.7.2",
+		"cookie-parser": "^1.4.3",
+		"cross-spawn": "^6.0.5",
+		"cssnano": "^3.10.0",
+		"express": "^4.16.2",
+		"express-hbs": "^1.0.4",
+		"fs-extra": "^5.0.0",
+		"glob": "^7.1.2",
+		"globwatcher": "^1.4.1",
+		"helmet": "^3.11.0",
+		"i18n": "^0.8.3",
+		"livereload": "^0.7.0",
+		"log-symbols": "^2.2.0",
+		"node-sass-middleware": "^0.11.0",
+		"ora": "^2.0.0",
+		"postcss": "^6.0.19",
+		"serve-favicon": "^2.4.5",
+		"spdy": "^3.4.7"
+	}
+}

@@ -5,7 +5,7 @@
 	"main": "index.js",
 	"scripts": {
 		"build": "babel -d dist/ src/",
-		"test": "npm run lint && npm run lint",
+		"test": "rimraf dist && npm run lint",
 		"lint": "vave lint"
 	},
 	"bin": {
@@ -58,6 +58,7 @@
 		"@csstools/postcss-sass": "^2.0.0",
 		"autoprefixer": "^8.1.0",
 		"babel-core": "^6.26.0",
+		"babel-loader": "^7.1.4",
 		"babel-plugin-transform-class-properties": "^6.24.1",
 		"babel-plugin-transform-decorators-legacy": "^1.3.4",
 		"babel-plugin-transform-do-expressions": "^6.22.0",
@@ -66,6 +67,7 @@
 		"babel-plugin-transform-runtime": "^6.23.0",
 		"babel-preset-env": "^1.6.1",
 		"babel-preset-flow": "^6.23.0",
+		"babel-preset-react": "^6.24.1",
 		"babel-preset-stage-3": "^6.24.1",
 		"babel-preset-vave": "^0.3.0",
 		"babel-runtime": "^6.26.0",
@@ -73,12 +75,15 @@
 		"chalk": "^2.3.1",
 		"clear": "^0.1.0",
 		"commander": "^2.14.1",
+		"common-tags": "^1.7.2",
 		"compression": "^1.7.2",
 		"cookie-parser": "^1.4.3",
 		"cross-spawn": "^6.0.5",
 		"cssnano": "^3.10.0",
+		"del": "^3.0.0",
 		"express": "^4.16.2",
 		"express-hbs": "^1.0.4",
+		"fbjs": "^0.8.16",
 		"fs-extra": "^5.0.0",
 		"glob": "^7.1.2",
 		"globwatcher": "^1.4.1",
@@ -89,7 +94,11 @@
 		"node-sass-middleware": "^0.11.0",
 		"ora": "^2.0.0",
 		"postcss": "^6.0.19",
+		"rimraf": "^2.6.2",
 		"serve-favicon": "^2.4.5",
-		"spdy": "^3.4.7"
+		"spdy": "^3.4.7",
+		"webpack": "^4.1.0",
+		"webpack-dev-middleware": "^3.0.1",
+		"webpack-hot-middleware": "^2.21.2"
 	}
 }

@@ -5,6 +5,7 @@ const ls = require('log-symbols');
 const chalk = require('chalk');
 // const spdy = require('spdy');
 const prepare = require('../dist/lib/prepare').default;
+const config = require('../dist/lib/config').default;
 
 /* eslint-disable global-require, import/no-dynamic-require, security/detect-non-literal-require */
 
@@ -27,13 +28,13 @@ function normalizePort(val) {
 const appInitializer = require(join(process.cwd(), '.expressx/build/app.js')).default;
 const app = prepare(appInitializer);
 
-const port = normalizePort(process.env.PORT || '3000');
+const port = normalizePort(process.env.PORT || config.port || '3000');
 app.set('port', port);
 
 const server = http.createServer(app);
 
 server.listen(port);
-server.on('error', error => {
+server.on('error', (error) => {
 	if (error.syscall !== 'listen') {
 		throw error;
 	}
@@ -56,7 +57,8 @@ server.on('error', error => {
 });
 
 server.on('listening', () => {
+	process.send('EXPRESSX:READY');
 	const addr = server.address();
 	const bind = typeof addr === 'string' ? `pipe ${addr}` : `port ${addr.port}`;
-	console.log(ls.info, chalk.cyan(`> Ready on port ${bind}`));
+	console.log(chalk.cyan(`> Ready on port ${bind}`));
 });

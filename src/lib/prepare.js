@@ -7,67 +7,90 @@ import bodyParser from 'body-parser';
 import cookieParser from 'cookie-parser';
 import compression from 'compression';
 import helmet from 'helmet';
-// import favicon from 'serve-favicon';
+import webpack from 'webpack';
+import webpackDevMiddleware from 'webpack-dev-middleware';
+import webpackHotMiddleware from 'webpack-hot-middleware';
+import { webpackConfig } from './webpack';
+import config from './config';
 
 const cwd = process.cwd();
+const webpackCompiler = webpack(webpackConfig);
 
+/**
+ * Set up an actual express app
+ *
+ * @export
+ * @param {any} appInitializer - User's Express setup
+ * @returns
+ */
 export default function prepare(appInitializer) {
 	let app = express();
-	fs.ensureDirSync('.expressx/build/public');
-	// @TODO Config file
-	// app.use(favicon(path.join(cwd, 'public', 'favicon.ico')));
+	fs.ensureDirSync(`.expressx/build/${config.staticFolder}`);
+
+	// Set up i18n
 	i18n.configure({
-		locales: ['en'],
-		cookie: 'locale',
-		directory: path.join(cwd, 'locales'),
-		objectNotation: true,
+		...config.i18n,
+		directory: path.join(cwd, config.i18n.path),
 	});
 
+	// Handlebars
 	app.engine(
 		'hbs',
 		hbs.express4({
-			partialsDir: path.join(cwd, 'views/partials'),
-			layoutsDir: path.join(cwd, 'views/layouts'),
-			defaultLayout: path.join(cwd, 'views/layouts/default'),
+			partialsDir: path.join(cwd, config.hbs.partials),
+			layoutsDir: path.join(cwd, config.hbs.layouts),
+			defaultLayout: path.join(cwd, config.hbs.defaultLayout),
 			i18n,
 		}),
 	);
-	app.set('views', path.join(cwd, 'views'));
+	app.set('views', path.join(cwd, config.hbs.views));
 	app.set('view engine', 'hbs');
 
-	app.use(helmet());
-	app.use((req, res, next) => {
-		res.setHeader('X-Powered-By', 'ExpressX');
-		next();
-	});
+	// Helmet for security
+	app.use(helmet(config.helmet));
+	// Shameless branding. Users should disable this
+	if (config.poweredByHeader) {
+		app.use((req, res, next) => {
+			res.setHeader('X-Powered-By', config.poweredByHeader);
+			next();
+		});
+	}
+	// Boilerplate stuff
 	app.use(bodyParser.json());
 	app.use(bodyParser.urlencoded({ extended: false }));
 	app.use(cookieParser());
-	app.use(express.static(path.join(cwd, 'public')));
+	app.use(express.static(path.join(cwd, `.expressx/build/${config.staticFolder}`)));
 	app.use(i18n.init);
 	app.use(compression());
 
+	// Webpack middleware in development if selected
+	if (process.env.NODE_ENV !== 'production' && config.webpackMode === 'middleware') {
+		app.use(webpackDevMiddleware(webpackCompiler, config.webpackDevMiddleware));
+		app.use(webpackHotMiddleware(webpackCompiler));
+	}
+
+	// Now it's time to bring in user's config
 	app = appInitializer(app);
 
-	app.use((req, res, next) => {
-		const err = new Error('Not Found');
-		err.status = 404;
-		next(err);
-	});
+	// Optional error handling
+	if (config.errorHandling) {
+		app.use((req, res, next) => {
+			const err = new Error('Not Found');
+			err.status = 404;
+			next(err);
+		});
 
-	// error handler
-	app.use((err, req, res) => {
-		// set locals, only providing error in development
-		res.locals.message = err.message;
-		res.locals.error = req.app.get('env') === 'development' ? err : {};
+		// error handler
+		app.use((err, req, res) => {
+			// set locals, only providing error in development
+			res.locals.message = err.message;
+			res.locals.error = req.app.get('env') === 'development' ? err : {};
 
-		// render the error page
-		res.status(err.status || 500);
-		res.render('error');
-	});
-
-	// @TODO Awesome error handling
-	// @TODO SCSS/PostCSS
+			// render the error page
+			res.status(err.status || 500);
+			res.render('error');
+		});
+	}
 
 	return app;
 }

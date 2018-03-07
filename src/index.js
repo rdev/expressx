@@ -1,4 +1,7 @@
 import cli from 'commander';
+import clear from 'clear';
+import ls from 'log-symbols';
+import chalk from 'chalk';
 import packageJson from '../package.json';
 import serve from './lib/serve';
 
@@ -9,4 +12,13 @@ cli
 
 cli.parse(process.argv);
 
-serve(cli);
+clear();
+try {
+	serve(cli);
+} catch (e) {
+	console.error(
+		ls.error,
+		chalk.red("Something went sideways and we didn't expect it. Here's what happened:"),
+	);
+	console.error(e);
+}

@@ -7,7 +7,6 @@ import chalk from 'chalk';
 import ora from 'ora';
 import clear from 'clear';
 import del from 'del';
-import { stripIndent } from 'common-tags';
 import refresh from './livereload';
 import transpile from './transpile';
 import postcss from './postcss';

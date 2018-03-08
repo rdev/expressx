@@ -151,10 +151,10 @@ const webpackConfig = {
     mode: process.env.NODE_ENV === 'production' ? 'development' : 'production',
     entry: {
         app: './public/js/app.js',
-	},
+    },
     resolve: {
         extensions: ['.js', '.jsx'],
-	},
+    },
     module: {
         rules: [
            {
@@ -171,7 +171,7 @@ const webpackConfig = {
         path: join(cwd, '.expressx/build/public/js'),
         filename: '[name].min.js',
     },
-    plugins: dev
+    plugins: process.env.NODE_ENV === 'production'
         ? [new Webpack.HotModuleReplacementPlugin()]
         : [new Webpack.optimize.AggressiveMergingPlugin()],
 }

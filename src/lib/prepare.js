@@ -23,9 +23,11 @@ const webpackCompiler = webpack(webpackConfig);
  * @param {any} appInitializer - User's Express setup
  * @returns
  */
-export default function prepare(appInitializer) {
+export default function prepare(appInitializer, testSetup) {
 	let app = express();
-	fs.ensureDirSync(`.expressx/build/${config.staticFolder}`);
+	if (!testSetup) {
+		fs.ensureDirSync(`.expressx/build/${config.staticFolder}`);
+	}
 
 	// Set up i18n
 	i18n.configure({

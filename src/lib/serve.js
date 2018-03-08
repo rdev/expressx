@@ -167,6 +167,21 @@ async function handleStylesError(e) {
 }
 
 /**
+ * Handle Babel transpilation error
+ *
+ * @param {any} e - error object
+ */
+async function handleBabelError(e) {
+	console.error(ls.error, chalk.red('Babel encountered an error:'));
+	if (e.codeFrame) {
+		console.log(chalk.red(e.toString()));
+		console.log(e.codeFrame);
+	} else {
+		console.log(e);
+	}
+}
+
+/**
  * Main function
  *
  * @export
@@ -200,8 +215,7 @@ export default async function serve() {
 		await initialTranspile();
 	} catch (e) {
 		spinner.stop();
-		console.error(ls.error, chalk.red('Babel encountered an error:'));
-		console.log(e.codeFrame || e);
+		handleBabelError(e);
 	}
 
 	let ignoredFiles = [];
@@ -279,8 +293,7 @@ export default async function serve() {
 					proc.kill();
 					proc = startProcess();
 				} catch (e) {
-					console.error(ls.error, chalk.red('Babel encountered an error:'));
-					console.log(e.codeFrame || e);
+					handleBabelError(e);
 				}
 			}
 		}

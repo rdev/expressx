@@ -3,6 +3,7 @@ import fs from 'fs-extra';
 import postCSS from 'postcss';
 import autoprefixer from 'autoprefixer';
 import sass from '@csstools/postcss-sass';
+import syntax from 'postcss-scss';
 import cssnano from 'cssnano';
 import ora from 'ora';
 import config from './config';
@@ -24,15 +25,17 @@ export default async function postcss() {
 			processors.push(cssnano);
 		}
 
-		await fs.ensureDir('.expressx/build/public/styles');
-
 		// Process all files
 		await Promise.all(config.styles.map(async (cssPath) => {
 			try {
 				const css = await fs.readFile(join(cwd, cssPath));
+				const folder = cssPath.split('/');
+				folder.pop();
+				await fs.ensureDir(`.expressx/build/${folder.join('/')}`);
 				const result = await postCSS(processors).process(css, {
 					from: join(cwd, cssPath),
 					to: join(cwd, `.expressx/build/${cssPath.replace('.scss', '')}.css`),
+					syntax,
 				});
 
 				await fs.writeFile(

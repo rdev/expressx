@@ -2,6 +2,7 @@ import { join } from 'path';
 import { spawn } from 'cross-spawn';
 import glob from 'glob';
 import { globwatcher } from 'globwatcher';
+import fs from 'fs-extra';
 import ls from 'log-symbols';
 import chalk from 'chalk';
 import ora from 'ora';
@@ -32,6 +33,10 @@ function initialTranspile() {
 					join(cwd, `${config.staticFolder}/**/*.js`),
 					join(cwd, '.expressx/**/*.js'),
 					join(cwd, 'expressx.config.js'),
+					join(cwd, 'flow-typed/**/*.js'),
+					join(cwd, '**/__tests__/**/*.js'),
+					join(cwd, '**/coverage/**/*.js'),
+					...config.babel.ignore.map(g => join(cwd, g)),
 				],
 			},
 			async (err, files) => {
@@ -141,16 +146,8 @@ async function handleWebpackError(e) {
  * @param {any} e - error object
  */
 async function handleStylesError(e) {
-	const source = e.source
-		.split('\n')
-		.slice(e.line - 2, e.line + 2)
-		.join('\n');
-
-	console.error(
-		`\n${ls.error}`,
-		chalk.red(`Error when processing styles: "${chalk.bold(e.reason)}" in file: ${chalk.underline(e.file.replace(`${cwd}/`, ''))}`),
-	);
-	console.log(chalk.yellow(`\n    ${source}\n`));
+	console.error(`\n${ls.error}`, chalk.red('Error when processing styles: \n'));
+	console.log(e.toString());
 }
 
 /**
@@ -170,10 +167,15 @@ export default async function serve() {
 		'**/*.js',
 		'**/*.hbs',
 		'**/*.scss',
+		`${config.staticFolder}/**/*.*`,
+		`!${config.staticFolder}/**/*.js`,
 		'!node_modules/**/*.js',
 		'!dist/**/*.js',
-		`!${config.staticFolder}/**/*.js`,
 		'!.expressx/**/*.js',
+		'!flow-typed/**/*.js',
+		'!**/__tests__/**/*.js',
+		'!**/coverage/**/*.js',
+		...config.babel.ignore.map(g => `!${g}`),
 	];
 
 	// Initial transpile and setup
@@ -182,7 +184,7 @@ export default async function serve() {
 	} catch (e) {
 		spinner.stop();
 		console.error(ls.error, chalk.red('Babel encountered an error:'));
-		console.log(e.codeFrame);
+		console.log(e.codeFrame || e);
 	}
 
 	try {
@@ -192,11 +194,16 @@ export default async function serve() {
 	}
 	if (config.webpackMode === 'direct') {
 		try {
-			await webpack();
+			if (!config.disableWebpack) await webpack();
 		} catch (e) {
 			handleWebpackError(e);
 		}
 	}
+
+	await fs.copy(
+		join(cwd, config.staticFolder),
+		join(cwd, `.expressx/build/${config.staticFolder}`),
+	);
 
 	// Start process and stop the spinner
 	let proc = startProcess();
@@ -216,7 +223,7 @@ export default async function serve() {
 			}
 		}
 		if (file.includes('.js')) {
-			if (checkWebpackPaths(file, webpackEntries)) {
+			if (checkWebpackPaths(file, webpackEntries) && !config.disableWebpack) {
 				// If file is designated for webpack
 				try {
 					const webpackStats = await webpack();

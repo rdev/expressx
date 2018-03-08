@@ -22,6 +22,15 @@ module.exports = () => {
 
 	const plugins = [
 		// @TODO Optional chaining once Babel 7 is out of beta
+		[
+			require.resolve('babel-plugin-auto-import'),
+			{
+				declarations: [
+					{ default: 'i18n', members: ['__'], path: require.resolve('i18n') },
+					{ default: 'hbs', path: require.resolve('express-hbs') },
+				],
+			},
+		],
 		require.resolve('babel-plugin-transform-decorators-legacy'),
 		require.resolve('babel-plugin-transform-class-properties'),
 		require.resolve('babel-plugin-transform-object-rest-spread'),

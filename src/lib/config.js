@@ -10,6 +10,7 @@ const userConfigPath = join(cwd, 'expressx.config.js');
 // Standard config that can be extended
 const defaultConfig = {
 	babel: {
+		ignore: [],
 		sourceMaps: 'inline',
 		babelrc: false,
 		presets: [join(__dirname, '../../babel/server.js')],
@@ -42,6 +43,7 @@ const defaultConfig = {
 	webpackDevMiddleware: {
 		publicPath: '/js/',
 	},
+	disableWebpack: false,
 };
 
 /**
@@ -51,7 +53,13 @@ const defaultConfig = {
  */
 function validateConfig(config) {
 	const {
-		webpackMode, poweredByHeader, webpack, webpackDevMiddleware, port, styles,
+		webpackMode,
+		poweredByHeader,
+		webpack,
+		webpackDevMiddleware,
+		port,
+		styles,
+		babel,
 	} = config;
 	invariant(
 		webpackMode === 'middleware' || webpackMode === 'direct',
@@ -74,6 +82,12 @@ function validateConfig(config) {
 		typeof port,
 	);
 	invariant(Array.isArray(styles), '"styles" must be an array of path strings');
+	if (babel && babel.ignore) {
+		invariant(
+			Array.isArray(babel.ignore),
+			'Please specify Babel ignore paths as an array of globs',
+		);
+	}
 }
 
 // Merge default config and user config

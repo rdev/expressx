@@ -3,22 +3,28 @@ import clear from 'clear';
 import ls from 'log-symbols';
 import chalk from 'chalk';
 import packageJson from '../package.json';
+import init from './init';
 import serve from './lib/serve';
 
 cli
 	.version(packageJson.version)
 	.description('Smooth developer experience for Express.js')
+	.option('--init', 'Set up new ExpressX application')
 	.usage('[commands] [-options]');
 
 cli.parse(process.argv);
 
-clear();
-try {
-	serve(cli);
-} catch (e) {
-	console.error(
-		ls.error,
-		chalk.red("Something went sideways and we didn't expect it. Here's what happened:"),
-	);
-	console.error(e);
+if (cli.init) {
+	init();
+} else {
+	clear();
+	try {
+		serve(cli);
+	} catch (e) {
+		console.error(
+			ls.error,
+			chalk.red("Something went sideways and we didn't expect it. Here's what happened:"),
+		);
+		console.error(e);
+	}
 }

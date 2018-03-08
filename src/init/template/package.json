@@ -1,0 +1,10 @@
+{
+	"name": "my-awesome-expressx-app",
+	"version": "0.0.0",
+	"main": "app.js",
+	"license": "MIT",
+	"scripts": {
+		"start": "expressx",
+		"start-production": "NODE_ENV=production expressx"
+	}
+}

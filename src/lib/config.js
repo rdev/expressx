@@ -1,6 +1,7 @@
 import { join } from 'path';
 import fs from 'fs-extra';
 import invariant from 'fbjs/lib/invariant';
+import babelPreset from '../../babel/server';
 
 /* eslint-disable global-require, import/no-dynamic-require, security/detect-non-literal-require */
 
@@ -13,7 +14,7 @@ const defaultConfig = {
 		ignore: [],
 		sourceMaps: 'inline',
 		babelrc: false,
-		presets: [join(__dirname, '../../babel/server.js')],
+		...babelPreset,
 	},
 	http2: false, // { key, cert }
 	port: 3000,

@@ -2,8 +2,9 @@
 const http = require('http');
 const { join } = require('path');
 const ls = require('log-symbols');
+const fs = require('fs-extra');
 const chalk = require('chalk');
-// const spdy = require('spdy');
+const spdy = require('spdy');
 const prepare = require('../dist/lib/prepare').default;
 const config = require('../dist/lib/config').default;
 
@@ -31,7 +32,19 @@ const app = prepare(appInitializer);
 const port = normalizePort(process.env.PORT || config.port || '3000');
 app.set('port', port);
 
-const server = http.createServer(app);
+let server;
+
+if (config.http2 && config.http2.key && config.http2.cert) {
+	server = spdy.createServer(
+		{
+			key: fs.readFileSync(config.http2.key),
+			cert: fs.readFileSync(config.http2.cert),
+		},
+		app,
+	);
+} else {
+	server = http.createServer(app);
+}
 
 server.listen(port);
 server.on('error', (error) => {

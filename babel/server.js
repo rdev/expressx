@@ -28,6 +28,7 @@ module.exports = () => {
 				declarations: [
 					{ default: 'i18n', members: ['__'], path: require.resolve('i18n') },
 					{ default: 'hbs', path: require.resolve('express-hbs') },
+					{ default: 'Router', path: require.resolve('express') },
 				],
 			},
 		],

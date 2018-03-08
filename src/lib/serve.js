@@ -1,7 +1,7 @@
 import { join } from 'path';
 import { spawn } from 'cross-spawn';
 import glob from 'glob';
-import { globwatcher } from 'globwatcher';
+import watchman from 'fb-watchman';
 import fs from 'fs-extra';
 import ls from 'log-symbols';
 import chalk from 'chalk';
@@ -140,6 +140,22 @@ async function handleWebpackError(e) {
 	}
 }
 
+function cleanupStatic() {
+	return new Promise((resolve, reject) => {
+		glob(join(cwd, '.expressx/**/*.scss'), async (err, files) => {
+			// eslint-disable-next-line promise/no-promise-in-callback
+			await Promise.all(files.map(async (file) => {
+				try {
+					await fs.remove(file);
+				} catch (e) {
+					reject(e);
+				}
+			}));
+			resolve();
+		});
+	});
+}
+
 /**
  * Handle PostCSS bundling error
  *
@@ -156,27 +172,28 @@ async function handleStylesError(e) {
  * @export
  */
 export default async function serve() {
+	const jsGlobs = [
+		'**/*.js',
+		// hbs, scss
+		`!${config.staticFolder}/*.js`,
+		`!${config.staticFolder}/**/*.js`,
+		'!node_modules/**',
+		'!dist/**',
+		'!.expressx/**',
+		'!flow-typed/**',
+		'!__tests__/**',
+		'!**/*.test.js',
+		'!coverage/**',
+		'!**/*.config.js',
+		...config.watchmanIgnore.map(g => `!${g}`),
+	];
+
 	const spinner = ora('Warming up...').start();
 
 	// Remove previous build completely before production build
 	if (process.env.NODE_ENV === 'production') {
 		del(join(cwd, '.expressx/build'));
 	}
-
-	const watchglobs = [
-		'**/*.js',
-		'**/*.hbs',
-		'**/*.scss',
-		`${config.staticFolder}/**/*.*`,
-		`!${config.staticFolder}/**/*.js`,
-		'!node_modules/**/*.js',
-		'!dist/**/*.js',
-		'!.expressx/**/*.js',
-		'!flow-typed/**/*.js',
-		'!**/__tests__/**/*.js',
-		'!**/coverage/**/*.js',
-		...config.babel.ignore.map(g => `!${g}`),
-	];
 
 	// Initial transpile and setup
 	try {
@@ -185,6 +202,14 @@ export default async function serve() {
 		spinner.stop();
 		console.error(ls.error, chalk.red('Babel encountered an error:'));
 		console.log(e.codeFrame || e);
+	}
+
+	let ignoredFiles = [];
+	if (process.env.NODE_ENV !== 'production' && config.babel.ignore.length > 0) {
+		spinner.text = 'This might take a few moments...';
+		config.babel.ignore.forEach((g) => {
+			ignoredFiles = [...ignoredFiles, ...glob.sync(join(cwd, g))];
+		});
 	}
 
 	try {
@@ -204,6 +229,7 @@ export default async function serve() {
 		join(cwd, config.staticFolder),
 		join(cwd, `.expressx/build/${config.staticFolder}`),
 	);
+	await cleanupStatic();
 
 	// Start process and stop the spinner
 	let proc = startProcess();
@@ -211,7 +237,7 @@ export default async function serve() {
 
 	let webpackEntries = [];
 
-	// File change handler
+	// // File change handler
 	async function handleWatchFile(file) {
 		if (file.includes('.scss')) {
 			try {
@@ -222,7 +248,17 @@ export default async function serve() {
 				handleStylesError(e);
 			}
 		}
-		if (file.includes('.js')) {
+		if (file.includes('.hbs')) {
+			if (file.includes(config.hbs.partials)) {
+				clear();
+				proc.removeAllListeners('close');
+				proc.kill();
+				proc = startProcess();
+			} else {
+				refresh();
+			}
+		}
+		if (file.includes('.js') || file.includes('.jsx')) {
 			if (checkWebpackPaths(file, webpackEntries) && !config.disableWebpack) {
 				// If file is designated for webpack
 				try {
@@ -234,17 +270,17 @@ export default async function serve() {
 				} catch (e) {
 					handleWebpackError(e);
 				}
-			} else {
-				// If file is server code
+			} else if (!ignoredFiles.includes(join(cwd, file))) {
 				clear();
 				try {
-					await transpile(file);
+					//                                    This is dirty -_-
+					await transpile(join(cwd, file.replace(cwd.split('/')[cwd.split('/').length - 1], '')));
 					proc.removeAllListeners('close');
 					proc.kill();
 					proc = startProcess();
 				} catch (e) {
 					console.error(ls.error, chalk.red('Babel encountered an error:'));
-					console.log(e.codeFrame);
+					console.log(e.codeFrame || e);
 				}
 			}
 		}
@@ -259,9 +295,76 @@ export default async function serve() {
 			webpackEntries = Object.keys(webpackConfig.entry).map(key => webpackConfig.entry[key]);
 		}
 
-		const watch = globwatcher(watchglobs);
-		watch.on('changed', handleWatchFile);
-		watch.on('added', handleWatchFile);
-		watch.on('deleted', () => refresh());
+		const client = new watchman.Client();
+		client.capabilityCheck({ optional: [], required: ['relative_root'] }, (error) => {
+			if (error) {
+				console.log(error);
+				client.end();
+				return;
+			}
+
+			// Initiate the watch
+			client.command(['watch-project', cwd], (err, res) => {
+				if (err) {
+					console.error('Error initiating watch:', err);
+					return;
+				}
+
+				if ('warning' in res) {
+					console.log('warning: ', res.warning);
+				}
+
+				const jsSub = {
+					expression: [
+						'allof',
+						...jsGlobs.map(watchglob =>
+							(watchglob.includes('!')
+								? ['not', ['match', watchglob.replace('!', ''), 'wholename']]
+								: ['match', watchglob, 'wholename'])),
+					],
+					fields: ['name', 'size', 'mtime_ms', 'exists', 'type'],
+				};
+				const hbsSub = {
+					expression: [
+						'anyof',
+						['match', `${config.hbs.views}/*.hbs`, 'wholename'],
+						['match', `${config.hbs.views}/**/*.hbs`, 'wholename'],
+					],
+					fields: ['name', 'size', 'mtime_ms', 'exists', 'type'],
+				};
+				const scssSub = {
+					expression: [
+						'anyof',
+						['match', '*.scss', 'wholename'],
+						['match', '**/*.scss', 'wholename'],
+					],
+					fields: ['name', 'size', 'mtime_ms', 'exists', 'type'],
+				};
+
+				client.command(['subscribe', res.watch, 'expressx:js', jsSub], (e) => {
+					if (e) {
+						console.error('failed to subscribe: ', e);
+					}
+				});
+				client.command(['subscribe', res.watch, 'expressx:hbs', hbsSub], (e) => {
+					if (e) {
+						console.error('failed to subscribe: ', e);
+					}
+				});
+				client.command(['subscribe', res.watch, 'expressx:scss', scssSub], (e) => {
+					if (e) {
+						console.error('failed to subscribe: ', e);
+					}
+				});
+
+				client.on('subscription', (resp) => {
+					if (!resp.is_fresh_instance) {
+						resp.files.forEach((file) => {
+							handleWatchFile(file.name);
+						});
+					}
+				});
+			});
+		});
 	}
 }

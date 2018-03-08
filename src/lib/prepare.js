@@ -72,7 +72,7 @@ export default function prepare(appInitializer) {
 	// Now it's time to bring in user's config
 	app = appInitializer(app);
 
-	// Optional error handling
+	// @TODO Cool error handling
 	if (config.errorHandling) {
 		app.use((req, res, next) => {
 			const err = new Error('Not Found');

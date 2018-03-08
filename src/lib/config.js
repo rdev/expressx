@@ -15,7 +15,7 @@ const defaultConfig = {
 		babelrc: false,
 		presets: [join(__dirname, '../../babel/server.js')],
 	},
-	http2: false, // { keyfile, cert }
+	http2: false, // { key, cert }
 	port: 3000,
 	poweredByHeader: 'ExpressX',
 	errorHandling: true,
@@ -44,6 +44,7 @@ const defaultConfig = {
 		publicPath: '/js/',
 	},
 	disableWebpack: false,
+	watchmanIgnore: [],
 };
 
 /**

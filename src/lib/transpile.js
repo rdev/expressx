@@ -27,8 +27,8 @@ export default function transpile(file, initial) {
 				pathArray.pop();
 				const fileDir = pathArray.join('/').replace(cwd, '');
 
-				await fs.ensureDir(`${cwd}/.expressx/build${fileDir}`);
-				await fs.writeFile(`${cwd}/.expressx/build${file.replace(cwd, '')}`, result.code);
+				await fs.ensureDir(`${cwd}/.expressx/build/${fileDir}`);
+				await fs.writeFile(`${cwd}/.expressx/build/${file.replace(cwd, '')}`, result.code);
 				if (!initial) spinner.stop();
 
 				resolve();

@@ -14,7 +14,7 @@ const defaultConfig = {
 		ignore: [],
 		sourceMaps: 'inline',
 		babelrc: false,
-		...babelPreset,
+		presets: [join(__dirname, '../../babel/server')],
 	},
 	http2: false, // { key, cert }
 	port: 3000,

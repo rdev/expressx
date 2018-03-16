@@ -6,5 +6,8 @@
 	"scripts": {
 		"start": "expressx",
 		"start-production": "NODE_ENV=production expressx"
+	},
+	"dependencies": {
+		"expressx": "1.0.2"
 	}
 }

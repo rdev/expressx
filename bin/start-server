@@ -1,4 +1,7 @@
 #!/usr/bin/env node
+require('source-map-support').install({
+	hookRequire: true,
+});
 const http = require('http');
 const { join } = require('path');
 const ls = require('log-symbols');
@@ -47,7 +50,7 @@ if (config.http2 && config.http2.key && config.http2.cert) {
 }
 
 server.listen(port);
-server.on('error', (error) => {
+server.on('error', error => {
 	if (error.syscall !== 'listen') {
 		throw error;
 	}

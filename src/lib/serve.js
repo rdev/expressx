@@ -1,5 +1,5 @@
-import { join } from 'path';
-import { spawn } from 'cross-spawn';
+import {join,} from 'path';
+import {spawn,} from 'cross-spawn';
 import glob from 'glob';
 import watchman from 'fb-watchman';
 import fs from 'fs-extra';
@@ -11,7 +11,7 @@ import del from 'del';
 import refresh from './livereload';
 import transpile from './transpile';
 import postcss from './postcss';
-import webpack, { webpackConfig } from './webpack';
+import webpack, {webpackConfig,} from './webpack';
 import config from './config';
 
 /* eslint-disable global-require, import/no-dynamic-require, security/detect-non-literal-require */
@@ -25,8 +25,7 @@ const cwd = process.cwd();
 function initialTranspile() {
 	return new Promise((resolve, reject) => {
 		glob(
-			join(cwd, '**/*.js'),
-			{
+			join(cwd, '**/*.js'), {
 				ignore: [
 					join(cwd, 'node_modules/**/*.js'),
 					join(cwd, 'dist/**/*.js'),
@@ -309,7 +308,10 @@ export default async function serve() {
 		}
 
 		const client = new watchman.Client();
-		client.capabilityCheck({ optional: [], required: ['relative_root'] }, (error) => {
+		client.capabilityCheck({
+			optional: [],
+			required: ['relative_root'],
+		}, (error) => {
 			if (error) {
 				console.log(error);
 				client.end();
@@ -331,24 +333,22 @@ export default async function serve() {
 					expression: [
 						'allof',
 						...jsGlobs.map(watchglob =>
-							(watchglob.includes('!')
-								? ['not', ['match', watchglob.replace('!', ''), 'wholename']]
-								: ['match', watchglob, 'wholename'])),
+							(watchglob.includes('!') ?
+								['not', ['match', watchglob.replace('!', ''), 'wholename']] :
+								['match', watchglob, 'wholename'])),
 					],
 					fields: ['name', 'size', 'mtime_ms', 'exists', 'type'],
 				};
 				const hbsSub = {
 					expression: [
-						'anyof',
-						['match', `${config.hbs.views}/*.hbs`, 'wholename'],
+						'anyof', ['match', `${config.hbs.views}/*.hbs`, 'wholename'],
 						['match', `${config.hbs.views}/**/*.hbs`, 'wholename'],
 					],
 					fields: ['name', 'size', 'mtime_ms', 'exists', 'type'],
 				};
 				const scssSub = {
 					expression: [
-						'anyof',
-						['match', '*.scss', 'wholename'],
+						'anyof', ['match', '*.scss', 'wholename'],
 						['match', '**/*.scss', 'wholename'],
 					],
 					fields: ['name', 'size', 'mtime_ms', 'exists', 'type'],

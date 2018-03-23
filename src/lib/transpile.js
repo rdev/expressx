@@ -1,5 +1,5 @@
 import fs from 'fs-extra';
-import * as babel from 'babel-core';
+import * as babel from '@babel/core';
 import ora from 'ora';
 import config from './config';
 

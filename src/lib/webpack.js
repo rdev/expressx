@@ -18,7 +18,7 @@ const defaultWebpackConfig = {
 	},
 	resolveLoader: {
 		alias: {
-			'babel-loader': join(__dirname, '../../node_modules/babel-loader'),
+			'babel-loader': require.resolve('babel-loader'),
 		},
 	},
 	module: {

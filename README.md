@@ -1,5 +1,5 @@
 <p align="center">
-        <img alt="ExpressX" title="ExpressX" src="http://files.rdev.im/expressx-logo.svg" width="550">
+        <img alt="ExpressX" title="ExpressX" src="https://storage.googleapis.com/fivepointseven/expressx-logo.svg" width="550">
 </p>
 <p align="center">Smooth developer experience for Express.js</p>
 

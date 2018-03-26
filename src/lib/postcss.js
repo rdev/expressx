@@ -30,24 +30,28 @@ export default async function postcss() {
 			try {
 				const css = await fs.readFile(join(cwd, cssPath));
 				const folder = cssPath.split('/');
-				folder.pop();
-				await fs.ensureDir(`.expressx/build/${folder.join('/')}`);
+				const filename = folder.pop();
+
+				let outPath;
+
+				if (config.stylesOut) {
+					await fs.ensureDir(`.expressx/build/${config.stylesOut}`);
+					outPath = `${config.stylesOut}/${filename.replace('.scss', '.css')}`;
+				} else {
+					await fs.ensureDir(`.expressx/build/${folder.join('/')}`);
+					outPath = cssPath.replace('.scss', '.css');
+				}
+
 				const result = await postCSS(processors).process(css, {
 					from: join(cwd, cssPath),
-					to: join(cwd, `.expressx/build/${cssPath.replace('.scss', '')}.css`),
+					to: join(cwd, `.expressx/build/${outPath}`),
 					syntax,
 				});
 
-				await fs.writeFile(
-					join(cwd, `.expressx/build/${cssPath.replace('.scss', '')}.css`),
-					result.css,
-				);
+				await fs.writeFile(join(cwd, `.expressx/build/${outPath}`), result.css);
 				// Write source map in development
 				if (result.map && process.env.NODE_ENV !== 'production') {
-					await fs.writeFile(
-						join(cwd, `.expressx/build/${cssPath.replace('.scss', '')}.css.map`),
-						result.map,
-					);
+					await fs.writeFile(join(cwd, `.expressx/build/${outPath}.map`), result.map);
 				}
 			} catch (e) {
 				spinner.stop();

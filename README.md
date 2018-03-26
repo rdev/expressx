@@ -88,8 +88,8 @@ Here's what this file with all default settings looks like:
 module.exports = {
     babel: {
         ignore: [],
-       sourceMaps: 'inline',
-       presets: 'expressx/babel/server',
+        sourceMaps: 'inline',
+        presets: 'expressx/babel/server',
     },
     http2: false, // { key, cert }
     port: 3000,
@@ -113,6 +113,7 @@ module.exports = {
     },
     helmet: null, // helmet.js options
     styles: ['public/styles/styles.scss'],
+    stylesOut: 'public/css',
     webpackMode: 'direct', // "direct" | "middleware"
     webpack: config => config,
     webpackDevMiddleware: {
@@ -136,6 +137,7 @@ Let's break each field down.
 - **`autoprefixer`** - Autoprefixer [options](https://github.com/postcss/autoprefixer#options) object
 - **`helmet`** - [Helmet](https://github.com/helmetjs/helmet) options object
 - **`styles`** - Array of paths to styles entrypoints
+- **`stylesOut`** - Override styles output directory
 - **`webpackMode`** - Webpack mode. Can be set to `"direct"` or `"middleware"`. Direct mode is _usually_ faster. Middleware mode will use [webpack-dev-middleware](https://github.com/webpack/webpack-dev-middleware) and [webpack-hot-middleware](https://github.com/glenjamin/webpack-hot-middleware). _(**Note:** Though hot reloading is supported, it's not configured by default. You still have to set it up to suit your app)_
 - **`webpack`** - A function that accepts a Webpack config and returns a Webpack config. Use this to extend default configuration with your own. Scroll down to see default Webpack config
 - **`webpackDevMiddleware`** - webpack-dev-middleware [options](https://github.com/webpack/webpack-dev-middleware#options) object

@@ -26,6 +26,7 @@ module.exports = () => {
 		require.resolve('@babel/plugin-proposal-class-properties'),
 		require.resolve('@babel/plugin-proposal-optional-catch-binding'),
 		require.resolve('@babel/plugin-proposal-do-expressions'),
+		require.resolve('@babel/plugin-transform-runtime'),
 	];
 
 	return {

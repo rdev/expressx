@@ -48,12 +48,12 @@ To get started, first install expressx
 
 `npm install -g https://github.com/rdev/expressx`
 
-Then create a new direcrory and run `expressx --init` inside:
+Then create a new direcrory and run `expressx init` inside:
 
 ```bash
 mkdir new-project
 cd new-project
-expressx --init
+expressx init
 ```
 
 And you're good to go!
@@ -121,6 +121,7 @@ module.exports = {
     },
     disableWebpack: false,
     watchmanIgnore: [],
+    debugPort: 5858,
 }
 ```
 
@@ -143,6 +144,7 @@ Let's break each field down.
 - **`webpackDevMiddleware`** - webpack-dev-middleware [options](https://github.com/webpack/webpack-dev-middleware#options) object
 - **`disableWebpack`** - Set this to `false` to disable Webpack altogether
 - **`watchmanIgnore`** - Specify globs for file watcher to ignore
+- **`debugPort`** - Custom port to run the debugger on when using `--debug`
 
 ### Default Webpack config
 
@@ -180,3 +182,29 @@ const webpackConfig = {
 ```
 
 Since ExpressX is using Webpack 4, minification is done automatically in production mode.
+
+### Exporting builds
+
+In some cases you may need to separate the steps of generating the build and running it. ExpressX provides a simple way to do export your build and run it later. To build, use:
+
+```bash
+expressx build
+```
+
+And to run after the build is done:
+
+```bash
+expressx start
+```
+
+### Debugging
+
+You can attach to Node debugger by passing a `--debug` option to ExpressX like so:
+
+```bash
+expressx --debug
+
+# OR
+
+expressx start --debug
+```

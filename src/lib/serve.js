@@ -1,5 +1,4 @@
-import {join,} from 'path';
-import {spawn,} from 'cross-spawn';
+import { join } from 'path';
 import glob from 'glob';
 import watchman from 'fb-watchman';
 import fs from 'fs-extra';
@@ -8,10 +7,11 @@ import chalk from 'chalk';
 import ora from 'ora';
 import clear from 'clear';
 import del from 'del';
+import startProcess from './start-process';
 import refresh from './livereload';
 import transpile from './transpile';
 import postcss from './postcss';
-import webpack, {webpackConfig,} from './webpack';
+import webpack, { webpackConfig } from './webpack';
 import config from './config';
 
 /* eslint-disable global-require, import/no-dynamic-require, security/detect-non-literal-require */
@@ -22,10 +22,11 @@ const cwd = process.cwd();
  *
  * @returns {Promise}
  */
-function initialTranspile() {
+export function initialTranspile() {
 	return new Promise((resolve, reject) => {
 		glob(
-			join(cwd, '**/*.js'), {
+			join(cwd, '**/*.js'),
+			{
 				ignore: [
 					join(cwd, 'node_modules/**/*.js'),
 					join(cwd, 'dist/**/*.js'),
@@ -63,48 +64,6 @@ function initialTranspile() {
 	});
 }
 
-/* eslint-disable unicorn/no-process-exit */
-
-/**
- * Spawn child process with a server
- *
- * @returns {ChildProcess}
- */
-function startProcess() {
-	const bin = join(__dirname, '../../bin/start-server');
-	const proc = spawn('node', [bin], {
-		stdio: ['inherit', 'inherit', 'inherit', 'ipc'], // IPC to know when server is done spinning up
-		customFds: [0, 1, 2],
-	});
-
-	proc.on('close', (code, signal) => {
-		if (code !== null) {
-			process.exit(code);
-		}
-		if (signal) {
-			if (signal === 'SIGKILL') {
-				process.exit(137);
-			}
-			console.log(`got signal ${signal}, exiting`);
-			process.exit(1);
-		}
-		process.exit(0);
-	});
-
-	proc.on('error', (err) => {
-		console.error(err);
-		process.exit(1);
-	});
-
-	proc.on('message', (message) => {
-		if (message === 'EXPRESSX:READY') {
-			refresh(); // Refresh when server is done spinning up
-		}
-	});
-
-	return proc;
-}
-
 /**
  * Check if watched file is designated for webpack
  *
@@ -125,21 +84,7 @@ function checkWebpackPaths(file, webpackEntries) {
 	return includes;
 }
 
-/**
- * Handle webpack bundling error
- *
- * @param {any} e - error object
- */
-async function handleWebpackError(e) {
-	if (e.errors) {
-		console.log(chalk.red.bold(`\nWebpack encountered ${chalk.underline(e.errors.length)} error(s):`));
-		e.errors.forEach(err => console.error(`\n${ls.error}`, `${err}`));
-	} else {
-		console.error(ls.error, chalk.red(`\n${e}`));
-	}
-}
-
-function cleanupStatic() {
+export function cleanupStatic() {
 	return new Promise((resolve, reject) => {
 		glob(join(cwd, '.expressx/**/*.scss'), async (err, files) => {
 			// eslint-disable-next-line promise/no-promise-in-callback
@@ -156,11 +101,25 @@ function cleanupStatic() {
 }
 
 /**
+ * Handle webpack bundling error
+ *
+ * @param {any} e - error object
+ */
+export async function handleWebpackError(e) {
+	if (e.errors) {
+		console.log(chalk.red.bold(`\nWebpack encountered ${chalk.underline(e.errors.length)} error(s):`));
+		e.errors.forEach(err => console.error(`\n${ls.error}`, `${err}`));
+	} else {
+		console.error(ls.error, chalk.red(`\n${e}`));
+	}
+}
+
+/**
  * Handle PostCSS bundling error
  *
  * @param {any} e - error object
  */
-async function handleStylesError(e) {
+export async function handleStylesError(e) {
 	console.error(`\n${ls.error}`, chalk.red('Error when processing styles: \n'));
 	console.log(e.toString());
 }
@@ -170,7 +129,7 @@ async function handleStylesError(e) {
  *
  * @param {any} e - error object
  */
-async function handleBabelError(e) {
+export async function handleBabelError(e) {
 	console.error(ls.error, chalk.red('Babel encountered an error:'));
 	if (e.codeFrame) {
 		console.log(chalk.red(e.toString()));
@@ -185,7 +144,7 @@ async function handleBabelError(e) {
  *
  * @export
  */
-export default async function serve() {
+export default async function serve({ debug }) {
 	const jsGlobs = [
 		'**/*.js',
 		// hbs, scss
@@ -245,7 +204,7 @@ export default async function serve() {
 	await cleanupStatic();
 
 	// Start process and stop the spinner
-	let proc = startProcess();
+	let proc = startProcess({ debug });
 	spinner.stop();
 
 	let webpackEntries = [];
@@ -266,7 +225,7 @@ export default async function serve() {
 				clear();
 				proc.removeAllListeners('close');
 				proc.kill();
-				proc = startProcess();
+				proc = startProcess({ debug });
 			} else {
 				refresh();
 			}
@@ -290,7 +249,7 @@ export default async function serve() {
 					await transpile(join(cwd, file.replace(cwd.split('/')[cwd.split('/').length - 1], '')));
 					proc.removeAllListeners('close');
 					proc.kill();
-					proc = startProcess();
+					proc = startProcess({ debug });
 				} catch (e) {
 					handleBabelError(e);
 				}
@@ -308,76 +267,84 @@ export default async function serve() {
 		}
 
 		const client = new watchman.Client();
-		client.capabilityCheck({
-			optional: [],
-			required: ['relative_root'],
-		}, (error) => {
-			if (error) {
-				console.log(error);
-				client.end();
-				return;
-			}
-
-			// Initiate the watch
-			client.command(['watch-project', cwd], (err, res) => {
-				if (err) {
-					console.error('Error initiating watch:', err);
+		client.capabilityCheck(
+			{
+				optional: [],
+				required: ['relative_root'],
+			},
+			(error) => {
+				if (error) {
+					console.log(error);
+					client.end();
 					return;
 				}
 
-				if ('warning' in res) {
-					console.log('warning: ', res.warning);
-				}
+				// Initiate the watch
+				client.command(['watch-project', cwd], (err, res) => {
+					if (err) {
+						console.error('Error initiating watch:', err);
+						return;
+					}
 
-				const jsSub = {
-					expression: [
-						'allof',
-						...jsGlobs.map(watchglob =>
-							(watchglob.includes('!') ?
-								['not', ['match', watchglob.replace('!', ''), 'wholename']] :
-								['match', watchglob, 'wholename'])),
-					],
-					fields: ['name', 'size', 'mtime_ms', 'exists', 'type'],
-				};
-				const hbsSub = {
-					expression: [
-						'anyof', ['match', `${config.hbs.views}/*.hbs`, 'wholename'],
-						['match', `${config.hbs.views}/**/*.hbs`, 'wholename'],
-					],
-					fields: ['name', 'size', 'mtime_ms', 'exists', 'type'],
-				};
-				const scssSub = {
-					expression: [
-						'anyof', ['match', '*.scss', 'wholename'],
-						['match', '**/*.scss', 'wholename'],
-					],
-					fields: ['name', 'size', 'mtime_ms', 'exists', 'type'],
-				};
+					if ('warning' in res) {
+						console.log('warning: ', res.warning);
+					}
 
-				client.command(['subscribe', res.watch, 'expressx:js', jsSub], (e) => {
-					if (e) {
-						console.error('failed to subscribe: ', e);
-					}
-				});
-				client.command(['subscribe', res.watch, 'expressx:hbs', hbsSub], (e) => {
-					if (e) {
-						console.error('failed to subscribe: ', e);
-					}
-				});
-				client.command(['subscribe', res.watch, 'expressx:scss', scssSub], (e) => {
-					if (e) {
-						console.error('failed to subscribe: ', e);
-					}
-				});
+					const jsSub = {
+						expression: [
+							'allof',
+							...jsGlobs.map(watchglob =>
+								(watchglob.includes('!')
+									? [
+										'not',
+										['match', watchglob.replace('!', ''), 'wholename'],
+										  ]
+									: ['match', watchglob, 'wholename'])),
+						],
+						fields: ['name', 'size', 'mtime_ms', 'exists', 'type'],
+					};
+					const hbsSub = {
+						expression: [
+							'anyof',
+							['match', `${config.hbs.views}/*.hbs`, 'wholename'],
+							['match', `${config.hbs.views}/**/*.hbs`, 'wholename'],
+						],
+						fields: ['name', 'size', 'mtime_ms', 'exists', 'type'],
+					};
+					const scssSub = {
+						expression: [
+							'anyof',
+							['match', '*.scss', 'wholename'],
+							['match', '**/*.scss', 'wholename'],
+						],
+						fields: ['name', 'size', 'mtime_ms', 'exists', 'type'],
+					};
 
-				client.on('subscription', (resp) => {
-					if (!resp.is_fresh_instance) {
-						resp.files.forEach((file) => {
-							handleWatchFile(file.name);
-						});
-					}
+					client.command(['subscribe', res.watch, 'expressx:js', jsSub], (e) => {
+						if (e) {
+							console.error('failed to subscribe: ', e);
+						}
+					});
+					client.command(['subscribe', res.watch, 'expressx:hbs', hbsSub], (e) => {
+						if (e) {
+							console.error('failed to subscribe: ', e);
+						}
+					});
+					client.command(['subscribe', res.watch, 'expressx:scss', scssSub], (e) => {
+						if (e) {
+							console.error('failed to subscribe: ', e);
+						}
+					});
+
+					client.on('subscription', (resp) => {
+						if (!resp.is_fresh_instance) {
+							resp.files.forEach((file) => {
+								handleWatchFile(file.name);
+							});
+						}
+					});
 				});
-			});
-		});
+			},
+		);
 	}
 }

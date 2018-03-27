@@ -1,7 +1,6 @@
 import { join } from 'path';
 import fs from 'fs-extra';
 import invariant from 'fbjs/lib/invariant';
-import babelPreset from '../../babel/server';
 
 /* eslint-disable global-require, import/no-dynamic-require, security/detect-non-literal-require */
 

@@ -1,11 +1,11 @@
 import cli from 'commander';
-import clear from 'clear';
 import ls from 'log-symbols';
 import chalk from 'chalk';
 import packageJson from '../package.json';
 import init from './init';
 import serve from './lib/serve';
 import build from './lib/build';
+import clear from './lib/utils';
 import { startCommand } from './lib/start-process';
 
 cli

@@ -5,7 +5,6 @@ import fs from 'fs-extra';
 import ls from 'log-symbols';
 import chalk from 'chalk';
 import ora from 'ora';
-import clear from 'clear';
 import del from 'del';
 import startProcess from './start-process';
 import refresh from './livereload';
@@ -13,6 +12,7 @@ import transpile from './transpile';
 import postcss from './postcss';
 import webpack, { webpackConfig } from './webpack';
 import config from './config';
+import clear from './utils';
 
 /* eslint-disable global-require, import/no-dynamic-require, security/detect-non-literal-require */
 const cwd = process.cwd();

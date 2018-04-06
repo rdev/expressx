@@ -46,7 +46,7 @@ Here's a full list of sweet stuff ExpressX handles automatically for you:
 
 To get started, first install expressx
 
-`npm install -g https://github.com/rdev/expressx`
+`npm install -g expressx`
 
 Then create a new direcrory and run `expressx init` inside:
 

@@ -5,7 +5,7 @@ import packageJson from '../package.json';
 import init from './init';
 import serve from './lib/serve';
 import build from './lib/build';
-import clear from './lib/utils';
+import { clear } from './lib/utils';
 import { startCommand } from './lib/start-process';
 
 cli

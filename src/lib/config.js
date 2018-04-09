@@ -15,6 +15,7 @@ const defaultConfig = {
 		babelrc: false,
 		presets: [join(__dirname, '../../babel/server')],
 	},
+	babelIncludeWebpackPaths: false,
 	http2: false, // { key, cert }
 	port: 3000,
 	poweredByHeader: 'ExpressX',

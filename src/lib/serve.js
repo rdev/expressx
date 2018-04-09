@@ -12,7 +12,7 @@ import transpile from './transpile';
 import postcss from './postcss';
 import webpack, { webpackConfig } from './webpack';
 import config from './config';
-import clear from './utils';
+import { clear } from './utils';
 
 /* eslint-disable global-require, import/no-dynamic-require, security/detect-non-literal-require */
 const cwd = process.cwd();
@@ -244,6 +244,23 @@ export default async function serve({ debug }) {
 				}
 			} else if (!ignoredFiles.includes(join(cwd, file))) {
 				clear();
+				try {
+					//                                    This is dirty -_-
+					await transpile(join(cwd, file.replace(cwd.split('/')[cwd.split('/').length - 1], '')));
+					proc.removeAllListeners('close');
+					proc.kill();
+					proc = startProcess({ debug });
+				} catch (e) {
+					handleBabelError(e);
+				}
+			}
+
+			// If transpilation by Babel is intended for webpack paths
+			if (
+				checkWebpackPaths(file, webpackEntries) &&
+				config.babelIncludeWebpackPaths &&
+				!ignoredFiles.includes(join(cwd, file))
+			) {
 				try {
 					//                                    This is dirty -_-
 					await transpile(join(cwd, file.replace(cwd.split('/')[cwd.split('/').length - 1], '')));

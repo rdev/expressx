@@ -3,6 +3,9 @@
 	"version": "0.0.0-development",
 	"description": "",
 	"main": "index.js",
+	"engines": {
+		"node": ">8"
+	},
 	"scripts": {
 		"prepare": "rimraf dist && npm run build",
 		"build": "babel -d dist/ src/",

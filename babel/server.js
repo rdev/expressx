@@ -13,6 +13,7 @@ module.exports = () => {
 					targets: {
 						node: 8,
 					},
+					exclude: ['transform-async-to-generator', 'transform-regenerator'],
 				},
 			  ],
 		require.resolve('@babel/preset-react'),

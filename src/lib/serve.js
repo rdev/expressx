@@ -100,6 +100,34 @@ export function cleanupStatic() {
 	});
 }
 
+export function copyJsonFiles() {
+	return new Promise((resolve, reject) => {
+		glob(
+			join(cwd, '**/*.json'),
+			{ ignore: [join(cwd, '.expressx/**/*.json')] },
+			async (err, files) => {
+				if (err) {
+					reject(err);
+				} else {
+					// Basically async forEach before resolving
+					// eslint-disable-next-line promise/no-promise-in-callback
+					await Promise.all(files.map(async (file) => {
+						try {
+							await fs.copy(
+								file,
+								join(cwd, `.expressx/build/${config.staticFolder}`),
+							);
+						} catch (e) {
+							reject(e);
+						}
+					}));
+					resolve();
+				}
+			},
+		);
+	});
+}
+
 /**
  * Handle webpack bundling error
  *
@@ -201,6 +229,8 @@ export default async function serve({ debug }) {
 		join(cwd, config.staticFolder),
 		join(cwd, `.expressx/build/${config.staticFolder}`),
 	);
+
+	await copyJsonFiles();
 	await cleanupStatic();
 
 	// Start process and stop the spinner

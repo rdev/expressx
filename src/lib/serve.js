@@ -106,8 +106,11 @@ export function copyJsonFiles() {
 			join(cwd, '**/*.json'),
 			{
 				ignore: [
-					join(cwd, 'node_modules/**/*.js'),
+					join(cwd, 'node_modules/**/*.json'),
+					join(cwd, 'coverage/**/*.json'),
 					join(cwd, '.expressx/**/*.json'),
+					join(cwd, 'jsconfig.json'),
+					join(cwd, 'tsconfig.json'),
 				],
 			},
 			async (err, files) => {

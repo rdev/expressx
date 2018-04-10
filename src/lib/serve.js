@@ -104,7 +104,12 @@ export function copyJsonFiles() {
 	return new Promise((resolve, reject) => {
 		glob(
 			join(cwd, '**/*.json'),
-			{ ignore: [join(cwd, '.expressx/**/*.json')] },
+			{
+				ignore: [
+					join(cwd, 'node_modules/**/*.js'),
+					join(cwd, '.expressx/**/*.json'),
+				],
+			},
 			async (err, files) => {
 				if (err) {
 					reject(err);
@@ -115,7 +120,7 @@ export function copyJsonFiles() {
 						try {
 							await fs.copy(
 								file,
-								join(cwd, `.expressx/build/${config.staticFolder}`),
+								file.replace(cwd, join(cwd, '.expressx/build')),
 							);
 						} catch (e) {
 							reject(e);

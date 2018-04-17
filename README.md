@@ -25,7 +25,6 @@ Here's a full list of sweet stuff ExpressX handles automatically for you:
 - I18n setup
 - [Helmet](https://github.com/helmetjs/helmet) for security
 - Gzip compression
-- I18n's `__`, `hbs` and `express.Router` are automatically provided to the files using them with no need to import 
 
 ### Styles
 - Sass/SCSS compilation

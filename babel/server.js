@@ -21,16 +21,6 @@ module.exports = () => {
 	];
 
 	const plugins = [
-		[
-			require.resolve('babel-plugin-auto-import'),
-			{
-				declarations: [
-					{ default: 'i18n', members: ['__'], path: require.resolve('i18n') },
-					{ default: 'hbs', path: require.resolve('express-hbs') },
-					{ default: 'Router', path: require.resolve('express') },
-				],
-			},
-		],
 		require.resolve('@babel/plugin-proposal-optional-chaining'),
 		require.resolve('@babel/plugin-proposal-decorators'),
 		require.resolve('@babel/plugin-proposal-object-rest-spread'),

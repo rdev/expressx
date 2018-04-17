@@ -1,11 +1,10 @@
 import cli from 'commander';
-import ls from 'log-symbols';
 import chalk from 'chalk';
 import packageJson from '../package.json';
 import init from './init';
 import serve from './lib/serve';
 import build from './lib/build';
-import { clear } from './lib/utils';
+import { clear } from './lib/utils';
 import { startCommand } from './lib/start-process';
 
 cli
@@ -38,7 +37,7 @@ if (cli.args.length === 0) {
 		serve(cli);
 	} catch (e) {
 		console.error(
-			ls.error,
+			chalk.bgRed.black(' ERROR '),
 			chalk.red("Something went sideways and we didn't expect it. Here's what happened:"),
 		);
 		console.error(e);

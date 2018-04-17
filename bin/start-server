@@ -4,7 +4,6 @@ require('source-map-support').install({
 });
 const http = require('http');
 const { join } = require('path');
-const ls = require('log-symbols');
 const fs = require('fs-extra');
 const chalk = require('chalk');
 const spdy = require('spdy');
@@ -60,11 +59,14 @@ server.on('error', (error) => {
 	// handle specific listen errors with friendly messages
 	switch (error.code) {
 		case 'EACCES':
-			console.error(ls.warning, chalk.yellow(`${bind} requires elevated privileges`));
+			console.error(
+				chalk.bgYellow.black(' WARNING '),
+				chalk.yellow(`${bind} requires elevated privileges`),
+			);
 			process.exit(1); // eslint-disable-line unicorn/no-process-exit
 			break;
 		case 'EADDRINUSE':
-			console.error(ls.error, chalk.red(`${bind} is already in use`));
+			console.error(chalk.bgRed.black(' ERROR '), chalk.red(`${bind} is already in use`));
 			process.exit(1); // eslint-disable-line unicorn/no-process-exit
 			break;
 		default:
@@ -76,5 +78,5 @@ server.on('listening', () => {
 	process.send('EXPRESSX:READY');
 	const addr = server.address();
 	const bind = typeof addr === 'string' ? `pipe ${addr}` : `port ${addr.port}`;
-	console.log(chalk.cyan(`> Ready on port ${bind}`));
+	console.log(chalk.bgGreen.black(' DONE '), chalk.green(`Ready on port ${bind}`));
 });

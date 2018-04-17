@@ -42,7 +42,7 @@ export function initialTranspile() {
 			async (err, files) => {
 				if (err) {
 					console.error(
-						ls.error,
+						chalk.bgRed.black(' ERROR '),
 						chalk.red("Oops, a weird error just happened and we weren't prepared for it:\n"),
 						err,
 					);
@@ -143,10 +143,10 @@ export function copyJsonFiles() {
  */
 export async function handleWebpackError(e) {
 	if (e.errors) {
-		console.log(chalk.red.bold(`\nWebpack encountered ${chalk.underline(e.errors.length)} error(s):`));
+		console.log(chalk.bgGreen.black(' ERROR '), chalk.red.bold(`\nWebpack encountered ${chalk.underline(e.errors.length)} error(s):`));
 		e.errors.forEach(err => console.error(`\n${ls.error}`, `${err}`));
 	} else {
-		console.error(ls.error, chalk.red(`\n${e}`));
+		console.error(chalk.bgRed.black(' ERROR '), chalk.red(`\n${e}`));
 	}
 }
 
@@ -156,7 +156,7 @@ export async function handleWebpackError(e) {
  * @param {any} e - error object
  */
 export async function handleStylesError(e) {
-	console.error(`\n${ls.error}`, chalk.red('Error when processing styles: \n'));
+	console.error(chalk.bgRed.black(' ERROR '), chalk.red('Error when processing styles: \n'));
 	console.log(e.toString());
 }
 
@@ -166,7 +166,7 @@ export async function handleStylesError(e) {
  * @param {any} e - error object
  */
 export async function handleBabelError(e) {
-	console.error(ls.error, chalk.red('Babel encountered an error:'));
+	console.error(chalk.bgRed.black(' ERROR '), chalk.red('Babel encountered an error:'));
 	if (e.codeFrame) {
 		console.log(chalk.red(e.toString()));
 		console.log(e.codeFrame);
@@ -329,7 +329,7 @@ export default async function serve({ debug }) {
 			},
 			(error) => {
 				if (error) {
-					console.log(error);
+					console.log(chalk.bgRed.black(' ERROR '), error);
 					client.end();
 					return;
 				}
@@ -337,12 +337,12 @@ export default async function serve({ debug }) {
 				// Initiate the watch
 				client.command(['watch-project', cwd], (err, res) => {
 					if (err) {
-						console.error('Error initiating watch:', err);
+						console.error(chalk.bgRed.black(' ERROR '), 'Error initiating watch:', err);
 						return;
 					}
 
 					if ('warning' in res) {
-						console.log('warning: ', res.warning);
+						console.log(chalk.bgYellow.black(' WARN '), res.warning);
 					}
 
 					const jsSub = {
@@ -377,17 +377,17 @@ export default async function serve({ debug }) {
 
 					client.command(['subscribe', res.watch, 'expressx:js', jsSub], (e) => {
 						if (e) {
-							console.error('failed to subscribe: ', e);
+							console.error(chalk.bgRed.black(' ERROR '), 'failed to subscribe: ', e);
 						}
 					});
 					client.command(['subscribe', res.watch, 'expressx:hbs', hbsSub], (e) => {
 						if (e) {
-							console.error('failed to subscribe: ', e);
+							console.error(chalk.bgRed.black(' ERROR '), 'failed to subscribe: ', e);
 						}
 					});
 					client.command(['subscribe', res.watch, 'expressx:scss', scssSub], (e) => {
 						if (e) {
-							console.error('failed to subscribe: ', e);
+							console.error(chalk.bgRed.black(' ERROR '), 'failed to subscribe: ', e);
 						}
 					});
 

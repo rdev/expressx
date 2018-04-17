@@ -1,6 +1,5 @@
 import { join } from 'path';
 import fs from 'fs-extra';
-import ls from 'log-symbols';
 import chalk from 'chalk';
 import { spawn } from 'cross-spawn';
 import refresh from './livereload';
@@ -26,21 +25,28 @@ export default function startProcess({ debug }) {
 
 	proc.on('close', (code, signal) => {
 		if (code !== null) {
-			process.exit(code);
+			// @TODO Close Watch
+			if (code === 0) {
+				process.exit(0);
+			} else {
+				console.error(
+					chalk.bgRed.black(' ERROR '),
+					chalk.red('Server process crashed. Waiting for changes...'),
+				);
+				console.log(chalk.gray("There's likely an additional logging output above"));
+			}
 		}
 		if (signal) {
 			if (signal === 'SIGKILL') {
 				process.exit(137);
 			}
-			console.log(`got signal ${signal}, exiting`);
+			console.log(chalk.bgGray.black(' SIG '), `Got signal ${signal}, exiting`);
 			process.exit(1);
 		}
-		process.exit(0);
 	});
 
 	proc.on('error', (err) => {
-		console.error(err);
-		process.exit(1);
+		console.error(chalk.bgRed.black(' ERROR '), chalk.red.bold(err));
 	});
 
 	proc.on('message', (message) => {
@@ -59,7 +65,7 @@ export function startCommand(cli) {
 		});
 	} else {
 		console.log();
-		console.error(ls.error, chalk.red('Build not found'));
+		console.error(chalk.bgRed.black(' ERROR '), chalk.red('Build not found'));
 		console.log();
 		console.log(`Did you forget to run "${chalk.bold('expressx build')}"?`);
 		console.log();

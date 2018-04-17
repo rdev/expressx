@@ -64,9 +64,9 @@ export default async function build() {
 
 	spinner.stop();
 	console.log();
-	console.log(chalk.green('Build successful!'));
+	console.log(chalk.bgGreen.black(' DONE '), chalk.green('Build successful!'));
 	console.log();
-	console.log(`Use "${chalk.cyan.bold('expressx start')}" to start the app.`);
+	console.log(`> Use "${chalk.cyan.bold('expressx start')}" to start the app.`);
 	console.log();
 
 	process.exit(0);

@@ -25,7 +25,6 @@ export default function startProcess({ debug }) {
 
 	proc.on('close', (code, signal) => {
 		if (code !== null) {
-			// @TODO Close Watch
 			if (code === 0) {
 				process.exit(0);
 			} else {

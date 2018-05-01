@@ -1331,7 +1331,7 @@ babel-code-frame@^6.16.0, babel-code-frame@^6.22.0, babel-code-frame@^6.26.0:
     esutils "^2.0.2"
     js-tokens "^3.0.2"
 
-babel-core@^6.24.1, babel-core@^6.26.0:
+babel-core@^6.26.0:
   version "6.26.0"
   resolved "https://registry.yarnpkg.com/babel-core/-/babel-core-6.26.0.tgz#af32f78b31a6fcef119c87b0fd8d9753f03a0bb8"
   dependencies:
@@ -1501,13 +1501,6 @@ babel-messages@^6.23.0:
   resolved "https://registry.yarnpkg.com/babel-messages/-/babel-messages-6.23.0.tgz#f3cdf4703858035b2a2951c6ec5edf6c62f2630e"
   dependencies:
     babel-runtime "^6.22.0"
-
-babel-plugin-auto-import@^0.7.1:
-  version "0.7.1"
-  resolved "https://registry.yarnpkg.com/babel-plugin-auto-import/-/babel-plugin-auto-import-0.7.1.tgz#e74e9ce24d38f4ff9f20c59cdcef8f3ba30d4013"
-  dependencies:
-    babel-core "^6.24.1"
-    is-array "^1.0.1"
 
 babel-plugin-check-es2015-constants@^6.22.0:
   version "6.22.0"
@@ -5502,10 +5495,6 @@ is-array-buffer-x@^1.0.13:
 is-array-buffer@^1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/is-array-buffer/-/is-array-buffer-1.0.0.tgz#f32497a0509d109423f472003f98bab6a8ea34cb"
-
-is-array@^1.0.1:
-  version "1.0.1"
-  resolved "https://registry.yarnpkg.com/is-array/-/is-array-1.0.1.tgz#e9850cc2cc860c3bc0977e84ccf0dd464584279a"
 
 is-arrayish@^0.2.1:
   version "0.2.1"

@@ -22,7 +22,7 @@ module.exports = () => {
 
 	const plugins = [
 		require.resolve('@babel/plugin-proposal-optional-chaining'),
-		require.resolve('@babel/plugin-proposal-decorators'),
+		[require.resolve('@babel/plugin-proposal-decorators'), { legacy: true }],
 		require.resolve('@babel/plugin-proposal-object-rest-spread'),
 		require.resolve('@babel/plugin-proposal-class-properties'),
 		require.resolve('@babel/plugin-proposal-optional-catch-binding'),

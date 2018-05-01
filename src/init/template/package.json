@@ -8,6 +8,7 @@
 		"start-production": "NODE_ENV=production expressx"
 	},
 	"dependencies": {
-		"expressx": "latest"
+		"expressx": "latest",
+		"express": "latest"
 	}
 }

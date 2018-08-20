@@ -10,6 +10,7 @@ const cwd = process.cwd();
 export default async function init() {
 	const spinner = ora('Setting up your new ExpressX project...').start();
 	await fs.copy(join(__dirname, '../../src/init/template'), join(cwd, '.'));
+	await fs.ensureDir(join(cwd, 'views/partials'));
 	spinner.text = 'Installing dependencies...';
 	const proc = spawn('npm', ['install']);
 	proc.on('exit', (code) => {

@@ -197,6 +197,7 @@ export default async function serve({ debug }) {
 		...config.watchmanIgnore.map(g => `!${g}`),
 	];
 
+	clear();
 	const spinner = ora('Warming up...').start();
 
 	// Remove previous build completely before production build

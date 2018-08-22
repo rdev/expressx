@@ -78,5 +78,6 @@ server.on('listening', () => {
 	process.send('EXPRESSX:READY');
 	const addr = server.address();
 	const bind = typeof addr === 'string' ? `pipe ${addr}` : `port ${addr.port}`;
+	console.clear();
 	console.log(chalk.bgGreen.black(' DONE '), chalk.green(`Ready on port ${bind}`));
 });

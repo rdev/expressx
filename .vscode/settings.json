@@ -20,8 +20,8 @@
         "temp/": true
     },
     "eslint.autoFixOnSave": true,
-    "editor.formatOnPaste": true,
-    "editor.formatOnSave": true,
+    "editor.formatOnPaste": false,
+    "editor.formatOnSave": false,
     "javascript.format.enable": false,
     "prettier.eslintIntegration": true,
     "flow.useNPMPackagedFlow": true,

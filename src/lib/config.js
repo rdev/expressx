@@ -1,5 +1,6 @@
 import { join } from 'path';
 import fs from 'fs-extra';
+import chalk from 'chalk';
 import invariant from 'fbjs/lib/invariant';
 
 /* eslint-disable global-require, import/no-dynamic-require, security/detect-non-literal-require */
@@ -95,6 +96,12 @@ function validateConfig(config) {
 // Merge default config and user config
 function buildConfig() {
 	const userConfig = fs.existsSync(userConfigPath) ? require(userConfigPath) : {};
+	const configFields = Object.keys(userConfig);
+
+	if (configFields.length > 0) {
+		console.log(chalk.grey(`> Using config in ${chalk.bold('express.config.js')}. Fields: ${chalk.bold(configFields.join(', '))}`));
+	}
+
 	const config = {
 		...defaultConfig,
 		...userConfig,

@@ -1,10 +1,3 @@
-<p align="center">
-        <img alt="ExpressX" title="ExpressX" src="https://storage.googleapis.com/fivepointseven/expressx-logo.svg" width="550">
-</p>
-<p align="center">Smooth developer experience for Express.js</p>
-
-[![Vave Code Style](https://img.shields.io/badge/code_style-vave-21DFEA.svg)](https://github.com/fivepointseven/vave)
-
 # What is this
 
 ExpressX is a build system inspired by Next.js designed to make developing [Express](https://github.com/expressjs/express) applications a breeze. It is a litte opinionated, but everything is quite sensible. It also supports custom configurations for pretty much everything.

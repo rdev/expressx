@@ -15,6 +15,7 @@ cli
 
 cli
 	.command('init')
+	.option('--flow', 'Include Flow in dependencies')
 	.description('Set up new ExpressX application')
 	.action(init);
 

@@ -46,7 +46,9 @@ const defaultConfig = {
 		publicPath: '/js/',
 	},
 	disableWebpack: false,
-	watchmanIgnore: [],
+	disableStyles: false,
+	watchIgnore: [],
+	includeInBuild: [],
 };
 
 /**

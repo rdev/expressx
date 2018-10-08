@@ -23,7 +23,7 @@ const webpackCompiler = webpack(webpackConfig);
  * @param {any} appInitializer - User's Express setup
  * @returns
  */
-export default function prepare(appInitializer, testSetup) {
+export default async function prepare(appInitializer, testSetup) {
 	let app = express();
 	if (!testSetup) {
 		fs.ensureDirSync(`.expressx/build/${config.staticFolder}`);
@@ -72,7 +72,7 @@ export default function prepare(appInitializer, testSetup) {
 	}
 
 	// Now it's time to bring in user's config
-	app = appInitializer(app);
+	app = await appInitializer(app);
 
 	// @TODO Cool error handling
 	if (config.errorHandling) {

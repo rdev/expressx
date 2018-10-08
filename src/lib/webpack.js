@@ -40,6 +40,7 @@ const defaultWebpackConfig = {
 	plugins: dev
 		? [new Webpack.HotModuleReplacementPlugin()]
 		: [new Webpack.optimize.AggressiveMergingPlugin()],
+	performance: { hints: false },
 };
 
 const webpackConfig = config.webpack(defaultWebpackConfig);

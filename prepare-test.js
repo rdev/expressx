@@ -1,3 +1,3 @@
 const prepare = require('./dist/lib/prepare').default;
 
-module.exports = appInitializer => prepare(appInitializer, true);
+module.exports = async appInitializer => prepare(appInitializer, true);

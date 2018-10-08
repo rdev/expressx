@@ -12,7 +12,7 @@ import config from './config';
  *
  * @returns {ChildProcess}
  */
-export default function startProcess({ debug }) {
+export default function startProcess({ debug, isStartCommand }) {
 	const bin = join(__dirname, '../../bin/start-server');
 	const args = [bin];
 	if (debug) {
@@ -28,6 +28,9 @@ export default function startProcess({ debug }) {
 			if (code === 0) {
 				process.exit(0);
 			} else {
+				if (isStartCommand) {
+					process.exit(1);
+				}
 				console.error(
 					chalk.bgRed.black(' ERROR '),
 					chalk.red('Server process crashed. Waiting for changes...'),
@@ -46,10 +49,11 @@ export default function startProcess({ debug }) {
 
 	proc.on('error', (err) => {
 		console.error(chalk.bgRed.black(' ERROR '), chalk.red.bold(err));
+		if (isStartCommand) process.exit(1);
 	});
 
 	proc.on('message', (message) => {
-		if (message === 'EXPRESSX:READY') {
+		if (message === 'EXPRESSX:READY' && !isStartCommand) {
 			refresh(); // Refresh when server is done spinning up
 		}
 	});
@@ -58,16 +62,8 @@ export default function startProcess({ debug }) {
 }
 
 export function startCommand(cli) {
-	if (fs.existsSync(join(process.cwd(), '.expressx/build/app.js'))) {
-		startProcess({
-			debug: cli.parent.debug,
-		});
-	} else {
-		console.log();
-		console.error(chalk.bgRed.black(' ERROR '), chalk.red('Build not found'));
-		console.log();
-		console.log(`Did you forget to run "${chalk.bold('expressx build')}"?`);
-		console.log();
-		process.exit(1);
-	}
+	startProcess({
+		debug: cli.parent.debug,
+		isStartCommand: true,
+	});
 }

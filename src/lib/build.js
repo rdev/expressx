@@ -13,6 +13,7 @@ import {
 	handleWebpackError,
 	cleanupStatic,
 	initialTranspile,
+	copyCustomAssets,
 } from './serve';
 import config from './config';
 
@@ -41,10 +42,12 @@ export default async function build() {
 		});
 	}
 
-	try {
-		await postcss();
-	} catch (e) {
-		handleStylesError(e);
+	if (!config.disableStyles) {
+		try {
+			await postcss();
+		} catch (e) {
+			handleStylesError(e);
+		}
 	}
 
 	if (config.webpackMode === 'direct') {
@@ -61,6 +64,7 @@ export default async function build() {
 	);
 
 	await cleanupStatic();
+	await copyCustomAssets();
 
 	spinner.stop();
 	console.log();

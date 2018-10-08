@@ -1,6 +1,6 @@
 import { join } from 'path';
 import glob from 'glob';
-import watchman from 'fb-watchman';
+import chokidar from 'chokidar';
 import fs from 'fs-extra';
 import ls from 'log-symbols';
 import chalk from 'chalk';
@@ -136,6 +136,17 @@ export function copyJsonFiles() {
 	});
 }
 
+export function copyCustomAssets() {
+	return new Promise(async (resolve) => {
+		// eslint-disable-next-line no-restricted-syntax
+		for (const copyPath of config.includeInBuild) {
+			// eslint-disable-next-line no-await-in-loop
+			await fs.copy(join(cwd, copyPath), join(cwd, '.expressx/build', copyPath));
+		}
+		resolve();
+	});
+}
+
 /**
  * Handle webpack bundling error
  *
@@ -143,7 +154,7 @@ export function copyJsonFiles() {
  */
 export async function handleWebpackError(e) {
 	if (e.errors) {
-		console.log(chalk.bgGreen.black(' ERROR '), chalk.red.bold(`\nWebpack encountered ${chalk.underline(e.errors.length)} error(s):`));
+		console.log(chalk.bgRed.black(' ERROR '), chalk.red.bold(`\nWebpack encountered ${chalk.underline(e.errors.length)} error(s):`));
 		e.errors.forEach(err => console.error(`\n${ls.error}`, `${err}`));
 	} else {
 		console.error(chalk.bgRed.black(' ERROR '), chalk.red(`\n${e}`));
@@ -181,20 +192,18 @@ export async function handleBabelError(e) {
  * @export
  */
 export default async function serve({ debug }) {
-	const jsGlobs = [
-		'**/*.js',
-		// hbs, scss
-		`!${config.staticFolder}/*.js`,
-		`!${config.staticFolder}/**/*.js`,
-		'!node_modules/**',
-		'!dist/**',
-		'!.expressx/**',
-		'!flow-typed/**',
-		'!__tests__/**',
-		'!**/*.test.js',
-		'!coverage/**',
-		'!**/*.config.js',
-		...config.watchmanIgnore.map(g => `!${g}`),
+	const ignoreGlobs = [
+		join(cwd, `${config.staticFolder}/*.js`),
+		join(cwd, `${config.staticFolder}/**/*.js`),
+		join(cwd, 'node_modules/**/*.*'),
+		join(cwd, 'dist/**'),
+		join(cwd, '.expressx/**'),
+		join(cwd, 'flow-typed/**'),
+		join(cwd, '__tests__/**'),
+		join(cwd, '**/*.test.js'),
+		join(cwd, 'coverage/**'),
+		join(cwd, '**/*.config.js'),
+		...config.watchIgnore.map(g => join(cwd, g)),
 	];
 
 	clear();
@@ -206,6 +215,7 @@ export default async function serve({ debug }) {
 	}
 
 	// Initial transpile and setup
+	// @TODO Fully rely on Chokidar for this
 	try {
 		await initialTranspile();
 	} catch (e) {
@@ -221,11 +231,14 @@ export default async function serve({ debug }) {
 		});
 	}
 
-	try {
-		await postcss();
-	} catch (e) {
-		handleStylesError(e);
+	if (!config.disableStyles) {
+		try {
+			await postcss();
+		} catch (e) {
+			handleStylesError(e);
+		}
 	}
+
 	if (config.webpackMode === 'direct') {
 		try {
 			if (!config.disableWebpack) await webpack();
@@ -241,6 +254,7 @@ export default async function serve({ debug }) {
 
 	await copyJsonFiles();
 	await cleanupStatic();
+	await copyCustomAssets();
 
 	// Start process and stop the spinner
 	let proc = startProcess({ debug });
@@ -250,7 +264,7 @@ export default async function serve({ debug }) {
 
 	// // File change handler
 	async function handleWatchFile(file) {
-		if (file.includes('.scss')) {
+		if (file.includes('.scss') && !config.disableStyles) {
 			try {
 				await postcss();
 				console.log(chalk.grey('> Styles processed successfully'));
@@ -284,8 +298,7 @@ export default async function serve({ debug }) {
 			} else if (!ignoredFiles.includes(join(cwd, file))) {
 				clear();
 				try {
-					//                                    This is dirty -_-
-					await transpile(join(cwd, file.replace(cwd.split('/')[cwd.split('/').length - 1], '')));
+					await transpile(file);
 					proc.removeAllListeners('close');
 					proc.kill();
 					proc = startProcess({ debug });
@@ -322,85 +335,27 @@ export default async function serve({ debug }) {
 			webpackEntries = Object.keys(webpackConfig.entry).map(key => webpackConfig.entry[key]);
 		}
 
-		const client = new watchman.Client();
-		client.capabilityCheck(
-			{
-				optional: [],
-				required: ['relative_root'],
-			},
-			(error) => {
-				if (error) {
-					console.log(chalk.bgRed.black(' ERROR '), error);
-					client.end();
-					return;
-				}
+		const watcher = chokidar.watch([
+			join(cwd, '**/*.js'),
+			join(cwd, '**/*.jsx'),
+			join(cwd, '**/*.hbs'),
+			join(cwd, '**/*.scss'),
+		], {
+			ignored: ignoreGlobs,
+			ignoreInitial: true,
+		});
 
-				// Initiate the watch
-				client.command(['watch-project', cwd], (err, res) => {
-					if (err) {
-						console.error(chalk.bgRed.black(' ERROR '), 'Error initiating watch:', err);
-						return;
-					}
+		watcher.on('all', (event, path) => {
+			if (event.includes('unlink')) {
+				fs.unlink(path.replace(cwd, `${cwd}/.expressx/build`)); // Clean up in .expressx/build
 
-					if ('warning' in res) {
-						console.log(chalk.bgYellow.black(' WARN '), res.warning);
-					}
-
-					const jsSub = {
-						expression: [
-							'allof',
-							...jsGlobs.map(watchglob =>
-								(watchglob.includes('!')
-									? [
-										'not',
-										['match', watchglob.replace('!', ''), 'wholename'],
-										  ]
-									: ['match', watchglob, 'wholename'])),
-						],
-						fields: ['name', 'size', 'mtime_ms', 'exists', 'type'],
-					};
-					const hbsSub = {
-						expression: [
-							'anyof',
-							['match', `${config.hbs.views}/*.hbs`, 'wholename'],
-							['match', `${config.hbs.views}/**/*.hbs`, 'wholename'],
-						],
-						fields: ['name', 'size', 'mtime_ms', 'exists', 'type'],
-					};
-					const scssSub = {
-						expression: [
-							'anyof',
-							['match', '*.scss', 'wholename'],
-							['match', '**/*.scss', 'wholename'],
-						],
-						fields: ['name', 'size', 'mtime_ms', 'exists', 'type'],
-					};
-
-					client.command(['subscribe', res.watch, 'expressx:js', jsSub], (e) => {
-						if (e) {
-							console.error(chalk.bgRed.black(' ERROR '), 'failed to subscribe: ', e);
-						}
-					});
-					client.command(['subscribe', res.watch, 'expressx:hbs', hbsSub], (e) => {
-						if (e) {
-							console.error(chalk.bgRed.black(' ERROR '), 'failed to subscribe: ', e);
-						}
-					});
-					client.command(['subscribe', res.watch, 'expressx:scss', scssSub], (e) => {
-						if (e) {
-							console.error(chalk.bgRed.black(' ERROR '), 'failed to subscribe: ', e);
-						}
-					});
-
-					client.on('subscription', (resp) => {
-						if (!resp.is_fresh_instance) {
-							resp.files.forEach((file) => {
-								handleWatchFile(file.name);
-							});
-						}
-					});
-				});
-			},
-		);
+				proc.removeAllListeners('close');
+				proc.kill();
+				proc = startProcess({ debug });
+				refresh();
+			} else {
+				handleWatchFile(path);
+			}
+		});
 	}
 }

@@ -1,3 +1,4 @@
 src/lib/*
 .travis.yml
 .vscode
+expressx-logo.svg

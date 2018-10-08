@@ -1,7 +1,7 @@
+#!/usr/bin/env node
+
 require('dotenv').config();
-require('source-map-support').install({
-	hookRequire: true,
-});
+require('source-map-support').install({ hookRequire: true });
 const http = require('http');
 const { join } = require('path');
 const fs = require('fs-extra');
@@ -28,56 +28,72 @@ function normalizePort(val) {
 	return false;
 }
 
-const appInitializer = require(join(process.cwd(), '.expressx/build/app.js')).default;
-const app = prepare(appInitializer);
+if (!fs.existsSync(join(process.cwd(), '.expressx/build/app.js'))) {
+	console.log();
+	console.error(chalk.bgRed.black(' ERROR '), chalk.red('Build not found'));
+	console.log();
+	console.log(`Did you forget to run "${chalk.bold('expressx build')}"?`);
+	console.log();
 
-const port = normalizePort(process.env.PORT || config.port || '3000');
-app.set('port', port);
-
-let server;
-
-if (config.http2 && config.http2.key && config.http2.cert) {
-	server = spdy.createServer(
-		{
-			key: fs.readFileSync(config.http2.key),
-			cert: fs.readFileSync(config.http2.cert),
-		},
-		app,
-	);
-} else {
-	server = http.createServer(app);
+	// eslint-disable-next-line unicorn/no-process-exit
+	process.exit(1);
 }
 
-server.listen(port);
-server.on('error', (error) => {
-	if (error.syscall !== 'listen') {
-		throw error;
+const appInitializer = require(join(process.cwd(), '.expressx/build/app.js')).default;
+
+const startServer = async () => {
+	const app = await prepare(appInitializer);
+
+	const port = normalizePort(process.env.PORT || config.port || '3000');
+	app.set('port', port);
+
+	let server;
+
+	if (config.http2 && config.http2.key && config.http2.cert) {
+		server = spdy.createServer(
+			{
+				key: fs.readFileSync(config.http2.key),
+				cert: fs.readFileSync(config.http2.cert),
+			},
+			app,
+		);
+	} else {
+		server = http.createServer(app);
 	}
 
-	const bind = typeof port === 'string' ? `Pipe ${port}` : `Port ${port}`;
-
-	// handle specific listen errors with friendly messages
-	switch (error.code) {
-		case 'EACCES':
-			console.error(
-				chalk.bgYellow.black(' WARNING '),
-				chalk.yellow(`${bind} requires elevated privileges`),
-			);
-			process.exit(1); // eslint-disable-line unicorn/no-process-exit
-			break;
-		case 'EADDRINUSE':
-			console.error(chalk.bgRed.black(' ERROR '), chalk.red(`${bind} is already in use`));
-			process.exit(1); // eslint-disable-line unicorn/no-process-exit
-			break;
-		default:
+	server.listen(port);
+	server.on('error', (error) => {
+		if (error.syscall !== 'listen') {
 			throw error;
-	}
-});
+		}
 
-server.on('listening', () => {
-	process.send('EXPRESSX:READY');
-	const addr = server.address();
-	const bind = typeof addr === 'string' ? `pipe ${addr}` : `port ${addr.port}`;
-	console.clear();
-	console.log(chalk.bgGreen.black(' DONE '), chalk.green(`Ready on port ${bind}`));
-});
+		const bind = typeof port === 'string' ? `Pipe ${port}` : `Port ${port}`;
+
+		// handle specific listen errors with friendly messages
+		switch (error.code) {
+			case 'EACCES':
+				console.error(
+					chalk.bgYellow.black(' WARNING '),
+					chalk.yellow(`${bind} requires elevated privileges`),
+				);
+				process.exit(1); // eslint-disable-line unicorn/no-process-exit
+				break;
+			case 'EADDRINUSE':
+				console.error(chalk.bgRed.black(' ERROR '), chalk.red(`${bind} is already in use`));
+				process.exit(1); // eslint-disable-line unicorn/no-process-exit
+				break;
+			default:
+				throw error;
+		}
+	});
+
+	server.on('listening', () => {
+		process.send('EXPRESSX:READY');
+		const addr = server.address();
+		const bind = typeof addr === 'string' ? `pipe ${addr}` : `port ${addr.port}`;
+		console.clear();
+		console.log(chalk.bgGreen.black(' DONE '), chalk.green(`Ready on port ${bind}`));
+	});
+};
+
+startServer();

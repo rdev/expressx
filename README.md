@@ -1,10 +1,26 @@
+<p align="center">
+    <img alt="ExpressX" title="ExpressX" src="./expressx-logo.svg" width="550">
+</p>
+<p align="center">Smooth developer experience for Express.js</p>
+
 # What is this
 
 ExpressX is a build system inspired by Next.js designed to make developing [Express](https://github.com/expressjs/express) applications a breeze. It is a litte opinionated, but everything is quite sensible. It also supports custom configurations for pretty much everything.
 
+### New in v4.0.0
+
+- Removed dependency on Watchman in favor of [Chokidar](https://github.com/paulmillr/chokidar)
+- Improved performance
+- Added `disableStyles` option in config
+- Added an option to init project with `flow-bin` in dependencies
+- Improved exported build setup
+- Support for promise return in app initializer function
+- `includeInBuild` config option for copying custom assets to build directory
+- De-Yarn
+
 ## I already have Gulp. What's in it for me?
 
-Unlike general purpose task runners, ExpressX is designed specifically for Express applications. It can do a whole bunch of things that task runners can't. 
+Unlike general purpose task runners, ExpressX is designed specifically for Express applications. It can do a whole bunch of things that task runners can't.
 
 Here's a full list of sweet stuff ExpressX handles automatically for you:
 
@@ -112,7 +128,8 @@ module.exports = {
         publicPath: '/js/',
     },
     disableWebpack: false,
-    watchmanIgnore: [],
+    watchIgnore: [],
+    includeInBuild: [],
     debugPort: 5858,
 }
 ```
@@ -135,7 +152,9 @@ Let's break each field down.
 - **`webpack`** - A function that accepts a Webpack config and returns a Webpack config. Use this to extend default configuration with your own. Scroll down to see default Webpack config
 - **`webpackDevMiddleware`** - webpack-dev-middleware [options](https://github.com/webpack/webpack-dev-middleware#options) object
 - **`disableWebpack`** - Set this to `false` to disable Webpack altogether
-- **`watchmanIgnore`** - Specify globs for file watcher to ignore
+- **`disableStyles`** - Set this to `false` to disable SCSS compilation and PostCSS
+- **`watchIgnore`** - Specify globs for file watcher to ignore
+- **`includeInBuild`** - Specify custom paths to be included in build directory
 - **`debugPort`** - Custom port to run the debugger on when using `--debug`
 
 ### Default Webpack config

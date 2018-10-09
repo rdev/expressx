@@ -7,7 +7,7 @@
 
 ExpressX is a build system inspired by Next.js designed to make developing [Express](https://github.com/expressjs/express) applications a breeze. It is a litte opinionated, but everything is quite sensible. It also supports custom configurations for pretty much everything.
 
-### New in v4.0.0
+### New in v4.x
 
 - Removed dependency on Watchman in favor of [Chokidar](https://github.com/paulmillr/chokidar)
 - Improved performance
@@ -16,6 +16,7 @@ ExpressX is a build system inspired by Next.js designed to make developing [Expr
 - Improved exported build setup
 - Support for promise return in app initializer function
 - `includeInBuild` config option for copying custom assets to build directory
+- New `prepareServer` export in `app.js` for manipulating HTTP server instance
 - De-Yarn
 
 ## I already have Gulp. What's in it for me?
@@ -85,6 +86,23 @@ export default (app) => {
 ```
 
 This file is the main entrypoint of your app. All the configuration should be done here.
+
+### `prepareServer`
+
+Besides the default export that configures Express instance, you can also export a `prepareServer` function, that you can use to configure HTTP server instance:
+
+```js
+export default (app) => {
+    // Express config goes here
+    return app;
+}
+
+export function prepareServer(server) {
+    initSocketIO(server);
+    // No need for return here
+}
+
+```
 
 ### Config
 

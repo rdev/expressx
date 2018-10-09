@@ -39,7 +39,10 @@ if (!fs.existsSync(join(process.cwd(), '.expressx/build/app.js'))) {
 	process.exit(1);
 }
 
-const appInitializer = require(join(process.cwd(), '.expressx/build/app.js')).default;
+const appJS = require(join(process.cwd(), '.expressx/build/app.js'));
+
+const appInitializer = appJS.default;
+const { prepareServer } = appJS;
 
 const startServer = async () => {
 	const app = await prepare(appInitializer);
@@ -59,6 +62,11 @@ const startServer = async () => {
 		);
 	} else {
 		server = http.createServer(app);
+	}
+
+	if (typeof prepareServer === 'function') {
+		console.log(chalk.gray("> Running 'prepareServer' found in app.js"));
+		await prepareServer(server);
 	}
 
 	server.listen(port);

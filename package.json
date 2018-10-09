@@ -4,8 +4,7 @@
   "description": "",
   "main": "index.js",
   "engines": {
-    "node": ">=8",
-    "yarn": "YARN NO LONGER USED - use npm instead."
+    "node": ">=8"
   },
   "scripts": {
     "prepare": "rimraf dist && npm run build",

@@ -3,10 +3,10 @@
 require('dotenv').config();
 require('source-map-support').install({ hookRequire: true });
 const http = require('http');
+const https = require('https');
 const { join } = require('path');
 const fs = require('fs-extra');
 const chalk = require('chalk');
-const spdy = require('spdy');
 const prepare = require('../dist/lib/prepare').default;
 const config = require('../dist/lib/config').default;
 
@@ -52,11 +52,11 @@ const startServer = async () => {
 
 	let server;
 
-	if (config.http2 && config.http2.key && config.http2.cert) {
-		server = spdy.createServer(
+	if (config.https && config.https.key && config.https.cert) {
+		server = https.createServer(
 			{
-				key: fs.readFileSync(config.http2.key),
-				cert: fs.readFileSync(config.http2.cert),
+				key: fs.readFileSync(config.https.key),
+				cert: fs.readFileSync(config.https.cert),
 			},
 			app,
 		);

@@ -18,6 +18,7 @@ ExpressX is a build system inspired by Next.js designed to make developing [Expr
 - `includeInBuild` config option for copying custom assets to build directory
 - New `prepareServer` export in `app.js` for manipulating HTTP server instance
 - De-Yarn
+- Removed HTTP/2 support for now
 
 ## I already have Gulp. What's in it for me?
 
@@ -117,7 +118,7 @@ module.exports = {
         sourceMaps: 'inline',
         presets: 'expressx/babel/server',
     },
-    http2: false, // { key, cert }
+    https: false, // { key, cert }
     port: 3000,
     poweredByHeader: 'ExpressX', // string | false
     errorHandling: true,
@@ -155,7 +156,7 @@ module.exports = {
 Let's break each field down.
 
 - **`babel`** - Babel's standard [options](https://babeljs.io/docs/core-packages/#options) object
-- **`http2`** - HTTP/2 configuration object: `{ key: 'path/to/keyfile', cert: 'path/to/cert' }`
+- **`https`** - HTTP/2 configuration object: `{ key: 'path/to/keyfile', cert: 'path/to/cert' }`
 - **`port`** - Port to run the app on
 - **`poweredByHeader`** - Set custom `X-Powered-By` header. Set to `false` to disable it
 - **`errorHandling`** - Use default error handling. Set to `false` if you use your own handlers
